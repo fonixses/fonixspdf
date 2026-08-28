@@ -1,0 +1,3 @@
+"use client";
+import { AlertTriangle } from "lucide-react";
+export default function ErrorPage({ reset }: { reset: () => void }) { return <div className="container-shell grid min-h-[60vh] place-items-center py-20 text-center"><div><AlertTriangle className="mx-auto text-amber-500" size={52}/><p className="eyebrow mt-6">Conversion interrupted</p><h1 className="mt-2 text-3xl font-black">Something went wrong</h1><p className="mt-3 text-muted">FonixsPDF could not load this page. Your local files were not uploaded by this error screen.</p><button onClick={reset} className="primary-button mt-7">Try again</button></div></div>; }

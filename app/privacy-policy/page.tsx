@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import { LegalPage } from "@/components/legal/legal-page";
+export const metadata: Metadata = { title: "Privacy Policy" };
+export default function PrivacyPage() { return <LegalPage eyebrow="Legal" title="Privacy Policy" intro="FonixsPDF minimizes the data needed to convert your files." sections={[{ title: "Uploaded files", body: <>Files are used only to perform the requested conversion. They are stored under random internal identifiers and removed after download or within 60 minutes.</> }, { title: "Recent conversions", body: <>Recent-conversion metadata is saved only in your browser localStorage. It contains names, formats, and timestamps—not the file contents.</> }, { title: "Operational data", body: <>A production host may retain standard security and server logs. Do not log file contents, extracted text, or original filenames in production.</> }]} />; }

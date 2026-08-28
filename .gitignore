@@ -1,0 +1,33 @@
+# Dependencies and generated output
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+*.log
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local databases and runtime data
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/*
+!data/.gitkeep
+temp/*
+!temp/.gitkeep
+
+# Local tooling and operating-system files
+.vercel/
+.idea/
+.vscode/
+.DS_Store

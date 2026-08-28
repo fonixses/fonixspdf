@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import { LegalPage } from "@/components/legal/legal-page";
+export const metadata: Metadata = { title: "Terms" };
+export default function TermsPage() { return <LegalPage eyebrow="Legal" title="Terms of Use" intro="Use FonixsPDF only for files you are authorized to process." sections={[{ title: "Acceptable use", body: <>Do not upload unlawful, malicious, or rights-infringing content, and do not attempt to bypass upload or resource limits.</> }, { title: "Conversion results", body: <>Complex layouts, fonts, forms, and scanned documents can change during conversion. Review output before relying on it.</> }, { title: "Availability", body: <>The software is provided without a guarantee of uninterrupted service. Self-hosters are responsible for securing and monitoring their deployment.</> }]} />; }
