@@ -24,8 +24,9 @@ export const tools: ToolConfig[] = [
   { id: "pdf-to-txt", name: "PDF to TXT", shortDescription: "Extract readable text from a PDF.", description: detail("PDF", "TXT"), category: "Office Converter", icon: "file-text", inputExtensions: ["pdf"], outputExtension: "txt" },
   { id: "merge-pdf", name: "Merge PDF", shortDescription: "Combine and reorder multiple PDF files.", description: "Merge multiple PDF files in your chosen order.", category: "PDF Tools", icon: "files", inputExtensions: ["pdf"], outputExtension: "pdf", multiple: true },
   { id: "split-pdf", name: "Split PDF", shortDescription: "Extract selected pages into separate PDFs.", description: "Split a PDF using a page range such as 1-3 or 1,3,5.", category: "PDF Tools", icon: "scissors", inputExtensions: ["pdf"], outputExtension: "zip", pageRange: true },
-  { id: "compress-pdf", name: "Compress PDF", shortDescription: "Reduce PDF size with three compression levels.", description: "Compress PDF documents locally with Ghostscript.", category: "PDF Tools", icon: "archive", inputExtensions: ["pdf"], outputExtension: "pdf", compression: true },
+  { id: "compress-pdf", name: "Compress PDF", shortDescription: "Reduce PDF size with three optimization levels.", description: "Optimize PDF structure and compatible image streams locally with QPDF.", category: "PDF Tools", icon: "archive", inputExtensions: ["pdf"], outputExtension: "pdf", compression: true },
   { id: "rotate-pdf", name: "Rotate PDF", shortDescription: "Rotate every PDF page left, right, or 180°.", description: "Rotate PDF pages and download the updated document.", category: "PDF Tools", icon: "rotate", inputExtensions: ["pdf"], outputExtension: "pdf", rotation: true },
+  { id: "ocr-pdf", name: "OCR PDF", shortDescription: "Make scanned PDF text searchable and selectable.", description: "Recognize text in scanned PDF pages and create a searchable PDF using local OCR.", category: "PDF Tools", icon: "file-text", inputExtensions: ["pdf"], outputExtension: "pdf" },
 ];
 
 export const toolMap = new Map<ToolId, ToolConfig>(tools.map((tool) => [tool.id, tool]));

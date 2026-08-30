@@ -5,7 +5,7 @@ export type ToolId =
   | "compress-jpg" | "compress-png" | "compress-webp"
   | "jpg-to-pdf" | "png-to-pdf" | "pdf-to-jpg" | "pdf-to-png"
   | "word-to-pdf" | "pdf-to-word" | "excel-to-pdf" | "powerpoint-to-pdf" | "txt-to-pdf" | "pdf-to-txt"
-  | "merge-pdf" | "split-pdf" | "compress-pdf" | "rotate-pdf";
+  | "merge-pdf" | "split-pdf" | "compress-pdf" | "rotate-pdf" | "ocr-pdf";
 
 export type ToolIcon = "image" | "file-image" | "file-text" | "files" | "scissors" | "rotate" | "archive" | "sheet" | "slides";
 

@@ -9,9 +9,15 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "cleanup": "tsx scripts/cleanup-temp.ts",
-    "smoke": "tsx scripts/smoke-converters.ts"
+    "smoke": "tsx scripts/smoke-converters.ts",
+    "setup:pdfbox": "node scripts/install-pdfbox.mjs",
+    "setup:qpdf": "node scripts/install-qpdf.mjs",
+    "setup:engines": "npm run setup:pdfbox && npm run setup:qpdf",
+    "licenses:check": "node scripts/check-licenses.mjs"
   },
   "dependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
+    "@tesseract.js-data/ind": "^1.0.0",
     "clsx": "^2.1.1",
     "docx": "^9.7.1",
     "jszip": "^3.10.1",
@@ -24,6 +30,7 @@
     "sharp": "^0.35.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
+    "tesseract.js": "^7.0.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

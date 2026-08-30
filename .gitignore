@@ -25,6 +25,9 @@ data/*
 !data/.gitkeep
 temp/*
 !temp/.gitkeep
+vendor/*.jar
+vendor/qpdf-*/
+!vendor/.gitkeep
 
 # Local tooling and operating-system files
 .vercel/

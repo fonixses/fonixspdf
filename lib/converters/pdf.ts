@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { Document, Packer, Paragraph } from "docx";
 import JSZip from "jszip";
 import { degrees, PDFDocument, StandardFonts } from "pdf-lib";
+import { qpdfBinaryPath, runPdfBox } from "@/lib/converters/pdf-engine";
 import { runBinary } from "@/lib/process";
 import type { ConversionOutput, ConverterOptions } from "@/types/converter";
 
@@ -57,20 +58,20 @@ export async function rotatePdf(input: Buffer, rotation: number, baseName: strin
 
 export async function compressPdf(inputPath: string, directory: string, input: Buffer, level: ConverterOptions["compression"], baseName: string): Promise<ConversionOutput> {
   const outputPath = join(directory, "compressed-output.pdf");
-  const setting = level === "high" ? "/screen" : level === "low" ? "/printer" : "/ebook";
-  await runBinary("gs", ["-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", "-sDEVICE=pdfwrite", `-dPDFSETTINGS=${setting}`, `-sOutputFile=${outputPath}`, inputPath]);
+  const args = [inputPath, "--object-streams=generate", "--compress-streams=y", "--decode-level=generalized", "--recompress-flate", "--compression-level=9"];
+  if (level !== "low") args.push("--optimize-images", `--jpeg-quality=${level === "high" ? 55 : 78}`);
+  args.push(outputPath);
+  await runBinary(qpdfBinaryPath(), args);
   const compressed = await readFile(outputPath);
   return { data: compressed.length < input.length ? compressed : input, fileName: `${baseName}-compressed.pdf`, mimeType: "application/pdf" };
 }
 
 export async function pdfToImages(inputPath: string, directory: string, format: "jpg" | "png", baseName: string, quality = 90): Promise<ConversionOutput> {
-  const pattern = join(directory, `page-%04d.${format}`);
-  const device = format === "jpg" ? "jpeg" : "png16m";
-  const args = ["-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", `-sDEVICE=${device}`, "-r150"];
-  if (format === "jpg") args.push(`-dJPEGQ=${Math.min(100, Math.max(20, quality))}`);
-  args.push(`-sOutputFile=${pattern}`, inputPath);
-  await runBinary("gs", args);
-  const names = (await readdir(directory)).filter((name) => /^page-\d+\.(jpg|png)$/.test(name)).sort();
+  const prefix = join(directory, "rendered-page");
+  const args = ["render", `-i=${inputPath}`, `-outputPrefix=${prefix}`, `-format=${format}`, "-dpi=150", "-subsampling"];
+  if (format === "jpg") args.push(`-quality=${Math.min(100, Math.max(20, quality)) / 100}`);
+  await runPdfBox(args);
+  const names = (await readdir(directory)).filter((name) => new RegExp(`^rendered-page-\\d+\\.${format}$`).test(name)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   if (!names.length) throw new Error("No pages could be rendered from this PDF.");
   if (names.length === 1) return { data: await readFile(join(directory, names[0])), fileName: `${baseName}.${format}`, mimeType: `image/${format === "jpg" ? "jpeg" : "png"}` };
   const zip = new JSZip();
@@ -80,7 +81,7 @@ export async function pdfToImages(inputPath: string, directory: string, format: 
 
 export async function extractPdfText(inputPath: string, directory: string) {
   const outputPath = join(directory, "extracted.txt");
-  await runBinary("gs", ["-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", "-sDEVICE=txtwrite", `-sOutputFile=${outputPath}`, inputPath]);
+  await runPdfBox(["export:text", `-i=${inputPath}`, `-o=${outputPath}`, "-encoding=UTF-8", "-sort"]);
   return (await readFile(outputPath, "utf8")).replace(/\r\n/g, "\n").trim();
 }
 

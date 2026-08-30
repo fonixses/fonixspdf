@@ -11,7 +11,9 @@ FonixsPDF is a self-hostable online converter for PDF, Office documents, and ima
 - Multi-file ordering, image preview, rotation, deletion, and page settings
 - Image conversion and compression powered by Sharp
 - PDF creation, merge, split, and rotation powered by pdf-lib
-- PDF rendering, text extraction, and compression powered by Ghostscript
+- PDF rendering and text extraction powered by Apache PDFBox
+- PDF structural and image-stream optimization powered by QPDF
+- Searchable scanned-PDF output powered by locally bundled Tesseract.js
 - Office-to-PDF conversion powered by LibreOffice headless
 - PDF-to-DOCX text extraction and editable document generation
 - One-time downloads and automatic temporary-file cleanup after 60 minutes
@@ -26,7 +28,7 @@ FonixsPDF is a self-hostable online converter for PDF, Office documents, and ima
 | Image converter | JPG to PNG, PNG to JPG, WEBP to JPG, JPG to WEBP, PNG to WEBP, WEBP to PNG |
 | Image compression | Compress JPG, Compress PNG, Compress WEBP |
 | Office converter | Excel to PDF, PowerPoint to PDF, TXT to PDF, PDF to TXT |
-| PDF tools | Merge PDF, Split PDF, Compress PDF, Rotate PDF |
+| PDF tools | Merge PDF, Split PDF, Compress PDF, Rotate PDF, OCR PDF |
 
 PDF-to-JPG/PNG and split-PDF results are returned as ZIP files when they contain multiple files. PDF-to-Word creates an editable DOCX from extractable PDF text; it does not reproduce complex layout or OCR scanned pages.
 
@@ -34,7 +36,7 @@ PDF-to-JPG/PNG and split-PDF results are returned as ZIP files when they contain
 
 - Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4
 - Sharp, pdf-lib, JSZip, docx
-- Ghostscript and LibreOffice headless
+- Apache PDFBox, QPDF, Tesseract.js, and LibreOffice headless
 - Lucide React and Sonner
 
 No database, user account, or paid API is required.
@@ -45,22 +47,26 @@ Install the native conversion engines before starting the app:
 
 ```bash
 sudo apt update
-sudo apt install libreoffice ghostscript qpdf
+sudo apt install libreoffice default-jre-headless
 ```
 
-Ghostscript is required for PDF rendering, compression, and text extraction. LibreOffice is required for DOC/DOCX, XLS/XLSX, and PPT/PPTX to PDF. qpdf is recommended for diagnostics and future encrypted-PDF handling; current merge/split/rotate operations use pdf-lib.
+Apache PDFBox is required for PDF rendering and text extraction. `npm run setup:engines` downloads pinned PDFBox and QPDF releases from their official sources and verifies their published checksums. Tesseract.js and English/Indonesian language data are installed through npm for fully local OCR. LibreOffice converts DOC/DOCX, XLS/XLSX, and PPT/PPTX to PDF. Merge, split, and rotate operations continue to use pdf-lib.
 
 On macOS, install equivalents with Homebrew:
 
 ```bash
-brew install ghostscript qpdf
+brew install qpdf openjdk
 brew install --cask libreoffice
+npm run setup:pdfbox
 ```
+
+The bundled QPDF installer targets Linux x64. On other systems, install QPDF with the OS package manager and optionally set `QPDF_BINARY_PATH`. Use `PDFBOX_JAR_PATH` to provide a separately managed PDFBox JAR.
 
 ## Installation
 
 ```bash
 npm install
+npm run setup:engines # Linux x64; macOS uses npm run setup:pdfbox
 cp .env.example .env.local
 npm run dev
 ```
@@ -75,6 +81,7 @@ The default temporary directory is `./temp`. To use another writable location, s
 npm run dev
 npm run typecheck
 npm run lint
+npm run licenses:check
 ```
 
 Create a small test image with ImageMagick or another local utility, then exercise a real route such as `/jpg-to-png`. API conversion requests use `multipart/form-data` with `files`, `tool`, and a JSON `options` field.
@@ -96,7 +103,7 @@ npm start
 
 Set `NEXT_PUBLIC_SITE_URL` to the public HTTPS origin. Give the Node.js user write permission only to the configured temporary directory. Place the app behind a reverse proxy that enforces request/body limits, rate limits, TLS, timeouts, and security headers.
 
-Serverless platforms often impose body-size, execution-time, ephemeral-storage, and native-binary restrictions. A Node.js server or container with Ghostscript and LibreOffice installed is the recommended deployment target.
+Serverless platforms often impose body-size, execution-time, ephemeral-storage, and native-binary restrictions. A Node.js server or container with Java, QPDF, and LibreOffice available is the recommended deployment target. Tesseract.js and its selected language data ship as npm dependencies.
 
 ## Security model
 
@@ -133,19 +140,23 @@ types/                    shared converter types
 
 - `convertImage()` / compression: Sharp
 - `imagesToPdf()`, `mergePdf()`, `splitPdf()`, `rotatePdf()`, `textToPdf()`: pdf-lib
-- `pdfToImages()`, `compressPdf()`, PDF text extraction: Ghostscript
+- `pdfToImages()`, PDF text extraction: Apache PDFBox
+- `compressPdf()`: QPDF
+- `ocrPdf()`: Apache PDFBox and Tesseract.js
 - `officeToPdf()`: LibreOffice headless
 - Multi-result archives: JSZip
 - Extracted-text DOCX output: docx
 
 ## Known limits
 
-- Scanned PDFs need OCR, which is not included.
+- OCR accuracy depends on scan quality, page orientation, and the installed Tesseract language data.
+- OCR output uses bundled English and Indonesian language data selected by `FONIXS_OCR_LANG` and may not preserve the exact original visual encoding.
 - PDF-to-Word prioritizes editable extracted text, not pixel-perfect layout.
+- QPDF compression preserves document structure but cannot always reduce files whose images and streams are already optimized.
 - Password-protected or malformed files may be rejected by the conversion engine.
 - Browser progress is staged while the server processes a request; the current API does not stream byte-level conversion progress.
 - In-memory rate limiting is per Node.js process. Use Redis or proxy-level limiting for multi-instance deployments.
 
 ## License and third-party software
 
-Add your chosen project license before redistribution. Verify the licenses and redistribution requirements of Ghostscript, LibreOffice, and npm dependencies for your deployment model.
+Add your chosen project license before redistribution. Preserve `THIRD_PARTY_NOTICES.md` and the upstream license/notice files supplied with Apache PDFBox, QPDF, Tesseract.js, LibreOffice, and npm dependencies. Run `npm run licenses:check` whenever the dependency graph changes. FonixsPDF does not bundle or invoke Ghostscript or MuPDF.

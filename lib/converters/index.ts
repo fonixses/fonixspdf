@@ -1,6 +1,7 @@
 import { toolMap } from "@/config/tools";
 import { convertImage, imagesToPdf } from "@/lib/converters/image";
 import { officeToPdf } from "@/lib/converters/office";
+import { ocrPdf } from "@/lib/converters/ocr";
 import { compressPdf, mergePdf, pdfToImages, pdfToText, pdfToWord, rotatePdf, splitPdf, textToPdf } from "@/lib/converters/pdf";
 import type { ConversionOutput, ConverterOptions, ToolId } from "@/types/converter";
 
@@ -25,6 +26,7 @@ export async function runConversion(toolId: ToolId, inputs: InputFile[], directo
   if (toolId === "compress-pdf") return compressPdf(first.path, directory, first.buffer, options.compression, first.baseName);
   if (toolId === "pdf-to-txt") return pdfToText(first.path, directory, first.baseName);
   if (toolId === "pdf-to-word") return pdfToWord(first.path, directory, first.baseName);
+  if (toolId === "ocr-pdf") return ocrPdf(first.path, directory, first.baseName);
   if (toolId === "txt-to-pdf") return textToPdf(first.buffer, first.baseName);
   if (["word-to-pdf", "excel-to-pdf", "powerpoint-to-pdf"].includes(toolId)) return officeToPdf(first.path, directory, first.baseName);
   throw new Error("This conversion is not implemented.");

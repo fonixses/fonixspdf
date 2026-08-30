@@ -4,6 +4,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { PDFDocument } from "pdf-lib";
 import { convertImage, imagesToPdf } from "@/lib/converters/image";
+import { ocrPdf } from "@/lib/converters/ocr";
 import { compressPdf, mergePdf, pdfToImages, pdfToText, pdfToWord, rotatePdf, splitPdf, textToPdf } from "@/lib/converters/pdf";
 
 function assert(value: unknown, message: string): asserts value { if (!value) throw new Error(message); }
@@ -29,7 +30,9 @@ async function run() {
     const wordDir = join(root, "word"); await mkdir(wordDir); const word = await pdfToWord(inputPath, wordDir, "text"); assert(word.data[0] === 0x50 && word.data[1] === 0x4b, "PDF to Word failed");
     const imageDir = join(root, "render"); await mkdir(imageDir); const rendered = await pdfToImages(inputPath, imageDir, "png", "text"); assert(rendered.data.subarray(1, 4).toString() === "PNG", "PDF to PNG failed");
     const compressDir = join(root, "compress"); await mkdir(compressDir); const compressed = await compressPdf(inputPath, compressDir, textPdf.data, "recommended", "text"); assert(compressed.data.subarray(0, 5).toString() === "%PDF-", "Compress PDF failed");
-    console.log("Smoke test passed: image conversions, image-to-PDF, merge, split, rotate, render, compress, PDF-to-TXT, PDF-to-DOCX, and TXT-to-PDF.");
+    const ocrDir = join(root, "ocr"); await mkdir(ocrDir); const ocr = await ocrPdf(inputPath, ocrDir, "text"); assert((await PDFDocument.load(ocr.data)).getPageCount() === 1, "OCR PDF failed");
+    const searchablePath = join(root, "searchable.pdf"); await writeFile(searchablePath, ocr.data); const ocrTextDir = join(root, "ocr-text"); await mkdir(ocrTextDir); const ocrText = await pdfToText(searchablePath, ocrTextDir, "searchable"); assert(ocrText.data.toString().toLowerCase().includes("fonixspdf"), "OCR searchable text layer failed");
+    console.log("Smoke test passed: image conversions, image-to-PDF, merge, split, rotate, PDFBox render/text, QPDF compression, OCR, PDF-to-DOCX, and TXT-to-PDF.");
   } finally { await rm(root, { recursive: true, force: true }); }
 }
 
